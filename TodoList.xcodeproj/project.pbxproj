@@ -17,6 +17,7 @@
 		02F8C3EE25EFF83500BDAB62 /* ListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F8C3ED25EFF83500BDAB62 /* ListViewModel.swift */; };
 		02F8C3FE25F08D6500BDAB62 /* NoToDoItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02F8C3FD25F08D6500BDAB62 /* NoToDoItemsView.swift */; };
 		02F8C40225F19FBE00BDAB62 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 02F8C40125F19FBE00BDAB62 /* LaunchScreen.storyboard */; };
+		91849EAA27C32E3C005D5ED1 /* AddCategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91849EA927C32E3C005D5ED1 /* AddCategoryView.swift */; };
 		91979B6E27BD413C00302F36 /* Introspect in Frameworks */ = {isa = PBXBuildFile; productRef = 91979B6D27BD413C00302F36 /* Introspect */; };
 		91AFFCB727BA48B400E36674 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91AFFCB627BA48B400E36674 /* CloudKit.framework */; };
 		91AFFCB927BA5B6C00E36674 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91AFFCB827BA5B6C00E36674 /* Log.swift */; };
@@ -41,6 +42,7 @@
 		02F8C3ED25EFF83500BDAB62 /* ListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListViewModel.swift; sourceTree = "<group>"; };
 		02F8C3FD25F08D6500BDAB62 /* NoToDoItemsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoToDoItemsView.swift; sourceTree = "<group>"; };
 		02F8C40125F19FBE00BDAB62 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		91849EA927C32E3C005D5ED1 /* AddCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCategoryView.swift; sourceTree = "<group>"; };
 		91AFFCB427BA483600E36674 /* TodoList.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TodoList.entitlements; sourceTree = "<group>"; };
 		91AFFCB627BA48B400E36674 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		91AFFCB827BA5B6C00E36674 /* Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
@@ -115,6 +117,7 @@
 				022EF17725EEEA1D00112224 /* ListView.swift */,
 				022EF17C25EEEC0000112224 /* ListRowView.swift */,
 				022EF17F25EEEDF000112224 /* AddToDoItemView.swift */,
+				91849EA927C32E3C005D5ED1 /* AddCategoryView.swift */,
 				91B0EC3727C0509900587D26 /* EditToDoItemView.swift */,
 				02F8C3FD25F08D6500BDAB62 /* NoToDoItemsView.swift */,
 				02F8C40125F19FBE00BDAB62 /* LaunchScreen.storyboard */,
@@ -243,6 +246,7 @@
 				02F8C3E425EF085200BDAB62 /* ToDoItem.swift in Sources */,
 				91B0EC3827C0509900587D26 /* EditToDoItemView.swift in Sources */,
 				022EF18025EEEDF000112224 /* AddToDoItemView.swift in Sources */,
+				91849EAA27C32E3C005D5ED1 /* AddCategoryView.swift in Sources */,
 				02F8C3EE25EFF83500BDAB62 /* ListViewModel.swift in Sources */,
 				022EF16725EEE90900112224 /* TodoListApp.swift in Sources */,
 				91AFFCBD27BA98F300E36674 /* BaseModel.swift in Sources */,

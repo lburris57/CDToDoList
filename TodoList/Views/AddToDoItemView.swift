@@ -15,63 +15,117 @@ struct AddToDoItemView: View
     
     @EnvironmentObject var listViewModel: ListViewModel
     
-    @State var title: String = ""
-    @State var description: String = ""
-    @State var alertTitle: String = ""
+    @State var title: String = Constants.EMPTY_STRING
+    @State var description: String = Constants.EMPTY_STRING
+    @State var category: String = Constants.EMPTY_STRING
+    @State var alertTitle: String = Constants.EMPTY_STRING
     @State var showAlert: Bool = false
-
+    @State var showCategoryTextField: Bool = false
+    @State var selectedCategory: String = Constants.EMPTY_STRING
+    
     // MARK: -
     // MARK: BODY
     var body: some View
     {
-        NavigationView
+        ScrollView
         {
-            ScrollView
+            VStack(alignment: .leading, spacing: 20)
             {
-                VStack(alignment: .leading, spacing: 20)
+                HStack
                 {
-                    TextField("Please enter a title...", text: $title)
-                        .introspectTextField { textField in textField.becomeFirstResponder()}
-                        .padding(.horizontal)
-                        .frame(maxWidth: 400)
-                        .frame(height: 55)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .cornerRadius(10)
+                    Text(" Category:")
                     
+                    Picker("Category", selection: $selectedCategory)
+                    {
+                        ForEach(listViewModel.categories)
+                        {
+                            category in
+
+                            Text(category.categoryName).tag(category.categoryName)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: selectedCategory) { value in selectedCategory = value }
+                    
+                    Spacer()
+                }
+                
+                if showCategoryTextField
+                {
                     VStack(alignment: .leading)
                     {
-                        Text(" Enter Description:")
+                        Text(" Category:")
                         
-                        TextEditor(text: $description)
-                        .padding(.horizontal)
-                        .lineLimit(10)
-                        .frame(maxWidth: 400)
-                        .frame(height: 125)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .border(Color.accentColor, width: 1)
-                    }
-
-                    Button(action: saveButtonPressed, label:
-                    {
-                        Text("Save")
-                            .foregroundColor(.white)
-                            .font(.headline)
-                            .frame(height: 55)
+                        TextField("Please enter a new category...", text: $category)
+                            .introspectTextField { textField in textField.becomeFirstResponder()}
+                            .padding(.horizontal)
                             .frame(maxWidth: 400)
-                            .background(Color.accentColor)
-                            .cornerRadius(10)
-                            .shadow(
-                                color:Color.accentColor.opacity(0.7),
-                                radius: 20,
-                                x: 0,
-                                y: 20)
-                            
-                    }).disabled(!validateFields())
+                            .frame(height: 55)
+                            .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(10)
+                    }
                 }
-                .padding(14)
+
+                VStack(alignment: .leading)
+                {
+                    Text(" Title:")
+                    
+                        TextField("Please enter a title...", text: $title)
+                            .introspectTextField { textField in textField.becomeFirstResponder()}
+                            .padding(.horizontal)
+                            .frame(maxWidth: 400)
+                            .frame(height: 55)
+                            .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(10)
+                }
+                
+                VStack(alignment: .leading)
+                {
+                    Text(" Description:")
+                    
+                    TextEditor(text: $description)
+                    .padding(.horizontal)
+                    .lineLimit(10)
+                    .frame(maxWidth: 400)
+                    .frame(height: 125)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .border(Color.accentColor, width: 1)
+                }
+
+                Button(action: saveButtonPressed, label:
+                {
+                    Text("Save")
+                        .foregroundColor(.white)
+                        .font(.headline)
+                        .frame(height: 55)
+                        .frame(maxWidth: 400)
+                        .background(Color.accentColor)
+                        .cornerRadius(10)
+                        .shadow(
+                            color:Color.accentColor.opacity(0.7),
+                            radius: 20,
+                            x: 0,
+                            y: 20)
+                        
+                }).disabled(!validateFields())
             }
-            .navigationTitle("Add Item")
-            .alert(isPresented: $showAlert, content: getAlert)
+            .padding(14)
+        }
+        .navigationTitle("Add Item")
+        .alert(isPresented: $showAlert, content: getAlert)
+        .toolbar
+        {
+            ToolbarItemGroup(placement: .navigationBarTrailing)
+            {
+                NavigationLink(destination: AddCategoryView())
+                {
+                    HStack
+                    {
+                        Text("Add Category").foregroundColor(.blue)
+                        Label("Add Category", systemImage: "plus.circle.fill").foregroundColor(.blue)
+                    }
+                }
+            }
         }
     }
 
@@ -79,13 +133,13 @@ struct AddToDoItemView: View
     // MARK: FUNCTIONS
     func saveButtonPressed()
     {
-        listViewModel.addToDoItem(title: title, description: description)
+        listViewModel.addToDoItem(categoryName: selectedCategory, title: title, description: description)
         presentationMode.wrappedValue.dismiss()
     }
 
     func validateFields() -> Bool
     {
-        if title == "" || description == ""
+        if title == Constants.EMPTY_STRING || description == Constants.EMPTY_STRING
         {
             return false
         }
@@ -105,11 +159,8 @@ struct AddView_Previews: PreviewProvider
 {
     static var previews: some View
     {
-        Group
-        {
-            AddToDoItemView()
-            .preferredColorScheme(.dark)
-            .environmentObject(ListViewModel())
-        }
+        AddToDoItemView()
+        .preferredColorScheme(.dark)
+        .environmentObject(ListViewModel())
     }
 }

@@ -14,8 +14,10 @@ struct EditToDoItemView: View
     
     @EnvironmentObject var listViewModel: ListViewModel
     
-    @State var title: String = ""
-    @State var description: String = ""
+    @State var title: String = Constants.EMPTY_STRING
+    @State var category: String = Constants.EMPTY_STRING
+    @State var description: String = Constants.EMPTY_STRING
+    @State var selectedCategory:  String = Constants.EMPTY_STRING
     
     let toDoItem: ToDoItem
     
@@ -29,13 +31,35 @@ struct EditToDoItemView: View
             {
                 VStack(alignment: .leading, spacing: 20)
                 {
-                    TextField("\(title)", text: $title)
-                        .introspectTextField { textField in textField.becomeFirstResponder()}
-                        .padding(.horizontal)
-                        .frame(maxWidth: 400)
-                        .frame(height: 55)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .cornerRadius(10)
+                    HStack
+                    {
+                        Text(" Category:")
+                        
+                        Picker("Category", selection: $selectedCategory)
+                        {
+                            ForEach(listViewModel.categories)
+                            {
+                                category in
+
+                                Text(category.categoryName).tag(category.categoryName)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .onChange(of: selectedCategory) { value in selectedCategory = value }
+                    }
+                
+                    VStack(alignment: .leading)
+                    {
+                        Text(" Title:")
+                        
+                        TextField("\(title)", text: $title)
+                            .introspectTextField { textField in textField.becomeFirstResponder()}
+                            .padding(.horizontal)
+                            .frame(maxWidth: 400)
+                            .frame(height: 55)
+                            .background(Color(UIColor.secondarySystemBackground))
+                            .cornerRadius(10)
+                    }
                     
                     VStack(alignment: .leading)
                     {
@@ -71,10 +95,30 @@ struct EditToDoItemView: View
                 .padding(14)
             }
             .navigationTitle("Edit Item")
-            .navigationBarItems(trailing: Button("Cancel")
+            .toolbar
             {
-                presentationMode.wrappedValue.dismiss()
-            })
+                ToolbarItem(placement: .navigationBarTrailing)
+                {
+                    NavigationLink(destination: AddCategoryView())
+                    {
+                        HStack
+                        {
+                            Text("Add Category").foregroundColor(.blue)
+                            Label("Add Category", systemImage: "plus.circle.fill").foregroundColor(.blue)
+                        }
+                    }
+                }
+                
+                ToolbarItem(placement: .cancellationAction)
+                {
+                    Button("Cancel")
+                    {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                }
+            }
+            
+            Spacer()
         }
     }
     
@@ -85,7 +129,8 @@ struct EditToDoItemView: View
         toDoItem.toDoItemEntity.title = title
         toDoItem.toDoItemEntity.descriptionText = description
         
-        listViewModel.updateItem(toDoItem: toDoItem)
+        listViewModel.updateItem(toDoItem: toDoItem, categoryName: selectedCategory)
+        listViewModel.retrieveCategories()
         
         presentationMode.wrappedValue.dismiss()
     }

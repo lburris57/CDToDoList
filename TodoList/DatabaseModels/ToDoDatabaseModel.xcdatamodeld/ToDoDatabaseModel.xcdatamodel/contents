@@ -5,7 +5,7 @@
         <attribute name="createdBy" optional="YES" attributeType="String"/>
         <attribute name="dateCreated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
-        <relationship name="toDoItem" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ToDoItemEntity" inverseName="category" inverseEntity="ToDoItemEntity"/>
+        <relationship name="toDoItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ToDoItemEntity" inverseName="category" inverseEntity="ToDoItemEntity"/>
     </entity>
     <entity name="ToDoItemEntity" representedClassName="ToDoItemEntity" syncable="YES" codeGenerationType="class">
         <attribute name="createdBy" optional="YES" attributeType="String" defaultValueString="Anonymous"/>
@@ -14,7 +14,7 @@
         <attribute name="isCompleted" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="title" optional="YES" attributeType="String"/>
-        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CategoryEntity" inverseName="toDoItem" inverseEntity="CategoryEntity"/>
+        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CategoryEntity" inverseName="toDoItems" inverseEntity="CategoryEntity"/>
     </entity>
     <elements>
         <element name="CategoryEntity" positionX="-18" positionY="72" width="128" height="104"/>

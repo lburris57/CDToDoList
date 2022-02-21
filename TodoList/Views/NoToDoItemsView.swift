@@ -44,7 +44,7 @@ struct NoToDoItemsView: View
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .textFieldAlert(isShowing: $isShowingAlert, text: $alertInput, title: "Please Enter Your Name To Identify Items!")
+            .textFieldAlert(isShowing: $isShowingAlert, text: $alertInput, title: "Please Enter Your Name To Identify Items!")
         }
         
         Spacer()

@@ -25,6 +25,8 @@ struct ListRowView: View
             }
             .font(.callout)
             
+            Text(toDoItem.category).font(.caption).fontWeight(.bold).padding(.horizontal, 20).foregroundColor(.secondary)
+            
             Text(toDoItem.descriptionText).font(.callout).padding(.horizontal, 20).foregroundColor(.secondary)
             
             Text("Created by \(toDoItem.createdBy) on \(toDoItem.dateCreated)").font(.caption).padding(.horizontal, 20).foregroundColor(.secondary)

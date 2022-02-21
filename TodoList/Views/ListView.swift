@@ -26,12 +26,12 @@ extension SearchType
     {
         switch self
         {
-        case .noFilter:
-            return "No Filter"
-        case .notCompleted:
-            return "Not Completed"
-        case .completed:
-            return "Completed"
+            case .noFilter:
+                return "No Filter"
+            case .notCompleted:
+                return "Not Completed"
+            case .completed:
+                return "Completed"
         }
     }
 }
@@ -53,10 +53,10 @@ extension SortOrder
     {
         switch self
         {
-        case .ascending:
-            return "Ascending"
-        case .descending:
-            return "Descending"
+            case .ascending:
+                return "Ascending"
+            case .descending:
+                return "Descending"
         }
     }
 }
@@ -71,12 +71,15 @@ struct ListView: View
     @State private var toggleIcon: Bool = false
     @State private var isPresented: Bool = false
     @State private var selectedToDoItem: ToDoItem?
+    @State private var toDoItemCategory: String = Constants.EMPTY_STRING
+    @State private var categoryName: String = Constants.EMPTY_STRING
+    @State private var showHeader: Bool = true
 
     func filterToDoItems()
     {
         listViewModel.filterToDoItems(searchType: selectedSearchType.searchType, sortOrder: selectedSortOrder.sortOrder)
     }
-    
+
     func deleteItem(toDoItem: ToDoItem)
     {
         listViewModel.deleteItem(toDoItem: toDoItem)
@@ -85,7 +88,7 @@ struct ListView: View
     func toggleButtonClicked()
     {
         toggleIcon.toggle()
-        
+
         filterToDoItems()
     }
 
@@ -121,7 +124,7 @@ struct ListView: View
                                         }
                                     }
                                     .pickerStyle(.menu)
-                                    .onChange(of: selectedSearchType) { value in filterToDoItems() }
+                                    .onChange(of: selectedSearchType) { _ in filterToDoItems() }
 
                                     Button(action:
                                     {
@@ -133,7 +136,7 @@ struct ListView: View
                                         {
                                             selectedSortOrder = SortOrder.ascending
                                         }
-                                        
+
                                         toggleButtonClicked()
                                     })
                                     {
@@ -154,46 +157,60 @@ struct ListView: View
                         {
                             List
                             {
-                                Section(header:
-                                            
-                                HStack
+                                ForEach(listViewModel.populatedCategories)
                                 {
-                                    Text("Home").foregroundColor(.blue)
-                                    Image(systemName: "house.fill").foregroundColor(.blue)
-                                })
-                                {
-                                    ForEach(listViewModel.toDoItems)
-                                    {
-                                        toDoItem in
+                                    category in
+                                    
+                                    Section(header:
 
-                                        ListRowView(toDoItem: toDoItem)
-                                            .swipeActions(edge: .trailing, allowsFullSwipe: false)
+                                    HStack
+                                    {
+                                        Text(category.categoryName).foregroundColor(.blue)
+                                    })
+                                    {
+                                        ForEach(category.toDoItems)
                                         {
-                                            
-                                            Button("Edit")
+                                            toDoItem in
+
+                                            ListRowView(toDoItem: toDoItem)
+                                            .swipeActions(edge: .trailing, allowsFullSwipe: false)
                                             {
-                                                selectedToDoItem = toDoItem
-                                            }
-                                            .tint(.green)
-                                            
-                                            Button("Delete")
-                                            {
-                                                withAnimation(.easeInOut)
+                                                Button("Delete")
                                                 {
-                                                    deleteItem(toDoItem: toDoItem)
+                                                    withAnimation(.easeInOut)
+                                                    {
+                                                        deleteItem(toDoItem: toDoItem)
+                                                    }
+                                                }
+                                                .tint(.red)
+                                            }
+                                            .swipeActions(edge: .leading, allowsFullSwipe: false)
+                                            {
+                                                //  Don't edit completed items
+                                                if !toDoItem.isCompleted
+                                                {
+                                                    Button("Edit")
+                                                    {
+                                                        selectedToDoItem = toDoItem
+                                                    }
+                                                    .tint(.blue)
                                                 }
                                             }
-                                            .tint(.red)
-                                        }
-                                        .onTapGesture
-                                        {
-                                            withAnimation(.linear)
+                                            .onTapGesture
                                             {
-                                                listViewModel.updateIsCompleted(toDoItem: toDoItem)
+                                                withAnimation(.linear)
+                                                {
+                                                    listViewModel.updateIsCompleted(toDoItem: toDoItem)
+                                                }
                                             }
                                         }
                                     }
                                 }
+                            }
+                            .refreshable
+                            {
+                                listViewModel.retrievePopulatedCategories()
+                                listViewModel.retrieveToDoItems()
                             }
                             .frame(maxWidth: 800)
                             .listStyle(.sidebar)
@@ -206,11 +223,10 @@ struct ListView: View
                 .fullScreenCover(item: $selectedToDoItem)
                 {
                     item in
-                    
+
                     EditToDoItemView(toDoItem: item)
                 }
             }
-
             .toolbar
             {
                 ToolbarItemGroup(placement: .navigationBarTrailing)
@@ -233,7 +249,7 @@ struct ListView_Previews: PreviewProvider
     static var previews: some View
     {
         ListView()
-        .preferredColorScheme(.dark)
-        .environmentObject(ListViewModel())
+            .preferredColorScheme(.dark)
+            .environmentObject(ListViewModel())
     }
 }

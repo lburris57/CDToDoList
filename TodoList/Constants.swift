@@ -10,4 +10,6 @@ import Foundation
 struct Constants
 {
     static let EMPTY_STRING = ""
+    
+    static let SYSTEM = "System"
 }

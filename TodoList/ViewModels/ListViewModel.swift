@@ -16,6 +16,7 @@ class ListViewModel: ObservableObject
     @Published var userName: String = "Anonymous"
     @Published var toDoItems: [ToDoItem] = []
     @Published var categories: [Category] = []
+    @Published var populatedCategories: [Category] = []
     
     let userNameKey: String = "userName"
     
@@ -23,7 +24,9 @@ class ListViewModel: ObservableObject
 
     init()
     {
+        initializeCategoryList()
         retrieveToDoItems()
+        retrievePopulatedCategories()
         retrieveUserNameFromUserDefaults()
     }
     
@@ -34,6 +37,7 @@ class ListViewModel: ObservableObject
         Log.info("SearchType is '\(searchType)' and sortOrder is '\(sortOrder)'")
         
         retrieveToDoItems()
+        retrievePopulatedCategories()
         
         if searchType == "Completed"
         {
@@ -83,7 +87,7 @@ class ListViewModel: ObservableObject
             return
         }
 
-        //  Set the current user name to the user name in UserDefaults
+        //  Set the current user name to the user name found in UserDefaults
         userName = savedUserName
         
         Log.info("Retrieved username from UserDefaults is: \(userName)")
@@ -97,6 +101,31 @@ class ListViewModel: ObservableObject
     func retrieveCategories()
     {
         categories = CategoryEntity.all().map(Category.init)
+    }
+    
+    //  Categories with toDoItems
+    func retrievePopulatedCategories()
+    {
+        for category in categories
+        {
+            if category.toDoItemsCount > 0
+            {
+                populatedCategories.append(category)
+            }
+        }
+    }
+    
+    func retrieveCategoryEntityByCategoryName(categoryName: String) -> CategoryEntity?
+    {
+        for category in categories
+        {
+            if category.categoryName == categoryName
+            {
+                return category.categoryEntity
+            }
+        }
+        
+        return nil
     }
 
     // MARK: -
@@ -129,8 +158,36 @@ class ListViewModel: ObservableObject
     
     // MARK: -
     // MARK: Add Functions
+    func initializeCategoryList()
+    {
+        let defaultCategories = ["General", "Shopping List", "Home", "Errands", "Appointments", "Reminders"]
+        
+        retrieveCategories()
+        
+        //  Populate the Category table if empty
+        if categories.isEmpty
+        {
+            for defaultCategory in defaultCategories
+            {
+                let categoryEntity: CategoryEntity = CategoryEntity(context: viewContext)
+                
+                categoryEntity.categoryName = defaultCategory
+                categoryEntity.createdBy = Constants.SYSTEM
+                categoryEntity.dateCreated = Date()
+                categoryEntity.lastUpdated = Date()
+                
+                categoryEntity.save()
+            }
+        }
+        
+        retrieveCategories()
+        
+        Log.info("Size of category list is: \(categories.count)")
+    }
+    
     func addCategory(categoryName: String)
     {
+        //  Don't allow duplicates
         for category in categories
         {
             if category.categoryName == categoryName
@@ -139,6 +196,7 @@ class ListViewModel: ObservableObject
             }
         }
         
+        //  Create a new CategoryEntity object
         let categoryEntity = CategoryEntity(context: viewContext)
         
         categoryEntity.categoryName = categoryName.capitalized
@@ -149,11 +207,17 @@ class ListViewModel: ObservableObject
         categoryEntity.save()
         
         retrieveToDoItems()
+        
         filterToDoItems(searchType: "No Filter", sortOrder: "Ascending")
     }
 
-    func addToDoItem(title: String, description: String)
+    func addToDoItem(categoryName: String, title: String, description: String)
     {
+        retrieveCategories()
+        
+        let categoryEntity = retrieveCategoryEntityByCategoryName(categoryName: categoryName)
+        
+        //  Create a new ToDoItemEntity object
         let toDoItemEntity = ToDoItemEntity(context: viewContext)
         
         toDoItemEntity.title = title.capitalized
@@ -162,10 +226,12 @@ class ListViewModel: ObservableObject
         toDoItemEntity.isCompleted = false
         toDoItemEntity.dateCreated = Date()
         toDoItemEntity.lastUpdated = Date()
+        toDoItemEntity.category = categoryEntity
         
         toDoItemEntity.save()
         
         retrieveToDoItems()
+        
         filterToDoItems(searchType: "No Filter", sortOrder: "Ascending")
     }
 
@@ -184,23 +250,27 @@ class ListViewModel: ObservableObject
         retrieveToDoItems()
     }
     
-    func updateItem(toDoItem: ToDoItem)
+    func updateItem(toDoItem: ToDoItem, categoryName: String)
     {
+        let categoryEntity = retrieveCategoryEntityByCategoryName(categoryName: categoryName)
+        
         if let toDoItemEntity = ToDoItemEntity.byId(id: toDoItem.id) as? ToDoItemEntity
         {
             toDoItemEntity.title = toDoItem.title
             toDoItemEntity.descriptionText = toDoItem.descriptionText
             toDoItemEntity.lastUpdated = Date()
+            toDoItemEntity.category = categoryEntity
             
             toDoItemEntity.save()
         }
         
         retrieveToDoItems()
+        
         filterToDoItems(searchType: "No Filter", sortOrder: "Ascending")
     }
     
     // MARK: -
-    // MARK: Save Functions
+    // MARK: UserDefault Functions
     func saveUserNameToUserDefaults(_ userName: String)
     {
         if let encodedData = try? JSONEncoder().encode(userName)
@@ -211,4 +281,24 @@ class ListViewModel: ObservableObject
         retrieveUserNameFromUserDefaults()
         filterToDoItems(searchType: "No Filter", sortOrder: "Ascending")
     }
+    
+    func saveToUserDefaults<T: Encodable>(key: String, value: T)
+    {
+        if let encodedData = try? JSONEncoder().encode(value)
+        {
+            UserDefaults.standard.set(encodedData, forKey: key)
+        }
+    }
+    
+    func retrieveFromUserDefaults<T: Decodable>(key: String) -> T?
+    {
+        if let data = UserDefaults.standard.data(forKey: key),
+           let retrievedData = try? JSONDecoder().decode(T.self, from: data)
+        {
+            return retrievedData
+        }
+        
+        return nil
+    }
 }
+ 
