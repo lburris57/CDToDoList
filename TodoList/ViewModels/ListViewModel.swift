@@ -13,12 +13,30 @@ class ListViewModel: ObservableObject
 {
     let viewContext = CoreDataManager.shared.persistentContainer.viewContext
     
+    /*
+     
+     How the filtering/sorting of the toDoItems in the populatedCategories array works
+     
+     0. Save the filter value "No Filter" and sort descriptor "Ascending" to UserDafaults when the app starts up
+     1. Whenever a user selects a filter and/or a sort descriptor, save the values in UserDefaults
+     2. Get the existing populatedCategoryList in the ListViewModel
+     3. Spin through the populatedCategoryList and create a new category object with the same values from the existing one except for the item list
+     4. Get the items from the existing category object
+     5. Get the filter and sort descriptor values out of UserDefaults
+     6. Sort the items based on the UserDefault values
+     7. Add the newly sorted items to the new category object and add it to a new category list
+     8. Replace the original populatedCategoryList with the new category list which will trigger the view to reload with the new data
+     
+     
+     */
+    
     @Published var userName: String = "Anonymous"
     @Published var toDoItems: [ToDoItem] = []
     @Published var categories: [Category] = []
     @Published var populatedCategories: [Category] = []
     
-    let userNameKey: String = "userName"
+    var filterType = Constants.EMPTY_STRING
+    var sortOrder = Constants.EMPTY_STRING
     
     var isFiltered = false
 
@@ -28,33 +46,87 @@ class ListViewModel: ObservableObject
         retrieveToDoItems()
         retrievePopulatedCategories()
         retrieveUserNameFromUserDefaults()
+        setFilterAndSortValuesToUserDefaults(filterType: filterType, sortOrder: sortOrder)
+        saveToUserDefaults(key: Constants.FILTER_TYPE_KEY, value: "No Filter")
+        saveToUserDefaults(key: Constants.SORT_ORDER_KEY, value: "Ascending")
+        
+        getFilterAndSortValuesFromUserDefaults()
+        
+        filterPopulatedCategoryToDoItems()
+        
+        Log.info("Filter type in UserDefaults is: \(filterType)")
+        Log.info("Sort order in UserDefaults is: \(sortOrder)")
+        Log.info("")
+    }
+    
+    // MARK: -
+    // MARK: Filter/sort values to/from UserDefaults Functions
+    func setFilterAndSortValuesToUserDefaults(filterType: String, sortOrder: String)
+    {
+        saveToUserDefaults(key: Constants.FILTER_TYPE_KEY, value: "No Filter")
+        saveToUserDefaults(key: Constants.SORT_ORDER_KEY, value: "Ascending")
+    }
+    
+    func getFilterAndSortValuesFromUserDefaults()
+    {
+        self.filterType = retrieveFromUserDefaults(key: Constants.FILTER_TYPE_KEY) ?? "No Filter"
+        self.sortOrder = retrieveFromUserDefaults(key: Constants.SORT_ORDER_KEY) ?? "Ascending"
     }
     
     // MARK: -
     // MARK: Filter Functions
-    func filterToDoItems(searchType: String, sortOrder: String)
+    func filterPopulatedCategoryToDoItems()
     {
-        Log.info("SearchType is '\(searchType)' and sortOrder is '\(sortOrder)'")
+        getFilterAndSortValuesFromUserDefaults()
         
-        retrieveToDoItems()
-        retrievePopulatedCategories()
+        var filteredPopulatedCategories: [Category] = []
         
-        if searchType == "Completed"
+        Log.info("Size of populated categories array is: \(populatedCategories.count)")
+        
+        for populatedCategory in populatedCategories
+        {
+            let toDoItemList = populatedCategory.toDoItems
+            
+            Log.info("Size of existing todoItems in \(populatedCategory.categoryName) is: \(toDoItemList.count)")
+            
+            var category: Category = Category(categoryEntity: populatedCategory.categoryEntity)
+            
+            let filteredToDoItems = filterToDoItems(filterType: filterType, sortOrder: sortOrder, toDoItems: toDoItemList)
+            
+            category.filteredToDoItems = filteredToDoItems
+            
+            filteredPopulatedCategories.append(category)
+        }
+        
+        //  Replace the existing populatedCategories with the filtered populated categories
+        populatedCategories.removeAll()
+        populatedCategories.append(contentsOf: filteredPopulatedCategories)
+        
+        Log.info("Size of filtered populated categories is: \(populatedCategories)")
+    }
+    
+    func filterToDoItems(filterType: String, sortOrder: String, toDoItems: [ToDoItem]) -> [ToDoItem]
+    {
+        Log.info("FilterType is '\(filterType)' and sortOrder is '\(sortOrder)'")
+        
+        var filteredToDoItems: [ToDoItem] = []
+        
+        if filterType == "Completed"
         {
             isFiltered = true
             
-            toDoItems = toDoItems.filter {$0.isCompleted == true}.sorted(by:
+            filteredToDoItems = toDoItems.filter {$0.isCompleted == true}.sorted(by:
             {
                 lhs, rhs in
                 
                 return sortOrder == "Ascending" ? lhs.lastUpdated < rhs.lastUpdated : lhs.lastUpdated > rhs.lastUpdated
             })
         }
-        else if searchType == "Not Completed"
+        else if filterType == "Not Completed"
         {
             isFiltered = true
             
-            toDoItems = toDoItems.filter {$0.isCompleted == false}.sorted(by:
+            filteredToDoItems = toDoItems.filter {$0.isCompleted == false}.sorted(by:
             {
                 lhs, rhs in
                 
@@ -65,10 +137,54 @@ class ListViewModel: ObservableObject
         {
             isFiltered = false
             
-            toDoItems = toDoItems.sorted(by:
+            filteredToDoItems = toDoItems.sorted(by:
             {
                 lhs, rhs in
                 
+                return sortOrder == "Ascending" ? lhs.lastUpdated < rhs.lastUpdated : lhs.lastUpdated > rhs.lastUpdated
+            })
+        }
+        
+        return filteredToDoItems
+    }
+    
+    func filterToDoItems(searchType: String, sortOrder: String)
+    {
+        Log.info("SearchType is '\(searchType)' and sortOrder is '\(sortOrder)'")
+
+        retrieveToDoItems()
+        retrievePopulatedCategories()
+
+        if searchType == "Completed"
+        {
+            isFiltered = true
+
+            toDoItems = toDoItems.filter {$0.isCompleted == true}.sorted(by:
+            {
+                lhs, rhs in
+
+                return sortOrder == "Ascending" ? lhs.lastUpdated < rhs.lastUpdated : lhs.lastUpdated > rhs.lastUpdated
+            })
+        }
+        else if searchType == "Not Completed"
+        {
+            isFiltered = true
+
+            toDoItems = toDoItems.filter {$0.isCompleted == false}.sorted(by:
+            {
+                lhs, rhs in
+
+                return sortOrder == "Ascending" ? lhs.lastUpdated < rhs.lastUpdated : lhs.lastUpdated > rhs.lastUpdated
+            })
+        }
+        else
+        {
+            isFiltered = false
+
+            toDoItems = toDoItems.sorted(by:
+            {
+                lhs, rhs in
+
                 return sortOrder == "Ascending" ? lhs.lastUpdated < rhs.lastUpdated : lhs.lastUpdated > rhs.lastUpdated
             })
         }
@@ -78,7 +194,7 @@ class ListViewModel: ObservableObject
     // MARK: Retrieve Functions
     func retrieveUserNameFromUserDefaults()
     {
-        guard let data = UserDefaults.standard.data(forKey: userNameKey),
+        guard let data = UserDefaults.standard.data(forKey: Constants.USER_NAME_KEY),
               let savedUserName = try? JSONDecoder().decode(String.self, from: data)
         else
         {
@@ -100,7 +216,18 @@ class ListViewModel: ObservableObject
     
     func retrieveCategories()
     {
-        categories = CategoryEntity.all().map(Category.init)
+        let categoryEntities = CategoryEntity.all() as [CategoryEntity]
+        
+        var categoryList: [Category] = []
+        
+        for categoryEntity in categoryEntities
+        {
+            let category = Category(categoryEntity: categoryEntity)
+            
+            categoryList.append(category)
+        }
+        
+        categories = categoryList
     }
     
     //  Categories with toDoItems
@@ -275,7 +402,7 @@ class ListViewModel: ObservableObject
     {
         if let encodedData = try? JSONEncoder().encode(userName)
         {
-            UserDefaults.standard.set(encodedData, forKey: userNameKey)
+            UserDefaults.standard.set(encodedData, forKey: Constants.USER_NAME_KEY)
         }
         
         retrieveUserNameFromUserDefaults()
@@ -290,10 +417,10 @@ class ListViewModel: ObservableObject
         }
     }
     
-    func retrieveFromUserDefaults<T: Decodable>(key: String) -> T?
+    func retrieveFromUserDefaults(key: String) -> String?
     {
         if let data = UserDefaults.standard.data(forKey: key),
-           let retrievedData = try? JSONDecoder().decode(T.self, from: data)
+           let retrievedData = try? JSONDecoder().decode(String.self, from: data)
         {
             return retrievedData
         }

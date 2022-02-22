@@ -9,7 +9,11 @@ import Foundation
 
 struct Constants
 {
-    static let EMPTY_STRING = ""
+    static let EMPTY_STRING: String = ""
     
-    static let SYSTEM = "System"
+    static let SYSTEM: String = "System"
+    
+    static let USER_NAME_KEY: String = "userName"
+    static let FILTER_TYPE_KEY: String = "filter"
+    static let SORT_ORDER_KEY: String = "sort"
 }

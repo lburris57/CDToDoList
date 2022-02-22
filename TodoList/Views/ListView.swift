@@ -77,7 +77,13 @@ struct ListView: View
 
     func filterToDoItems()
     {
-        listViewModel.filterToDoItems(searchType: selectedSearchType.searchType, sortOrder: selectedSortOrder.sortOrder)
+        Log.info("Selected filter type is \(selectedSearchType.searchType) and selected sort order is \(selectedSortOrder.sortOrder)")
+        
+        //  Save the selected filter/sort order values to UserFefaults
+        listViewModel.saveToUserDefaults(key: Constants.FILTER_TYPE_KEY, value: selectedSearchType.searchType)
+        listViewModel.saveToUserDefaults(key: Constants.SORT_ORDER_KEY, value: selectedSortOrder.sortOrder)
+    
+        listViewModel.filterPopulatedCategoryToDoItems()
     }
 
     func deleteItem(toDoItem: ToDoItem)
@@ -168,7 +174,7 @@ struct ListView: View
                                         Text(category.categoryName).foregroundColor(.blue)
                                     })
                                     {
-                                        ForEach(category.toDoItems)
+                                        ForEach(category.filteredToDoItems)
                                         {
                                             toDoItem in
 

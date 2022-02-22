@@ -13,6 +13,8 @@ import Foundation
 struct Category: Identifiable
 {
     let categoryEntity: CategoryEntity
+    
+    var filteredToDoItems: [ToDoItem] = []
 
     var id: NSManagedObjectID
     {
