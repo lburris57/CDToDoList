@@ -171,7 +171,7 @@ struct ListView: View
 
                                     HStack
                                     {
-                                        Text(category.categoryName).foregroundColor(.blue)
+                                        Text(category.categoryName + " (\(category.toDoItems.count) items)").foregroundColor(.blue)
                                     })
                                     {
                                         ForEach(category.filteredToDoItems)
@@ -215,8 +215,9 @@ struct ListView: View
                             }
                             .refreshable
                             {
-                                listViewModel.retrievePopulatedCategories()
-                                listViewModel.retrieveToDoItems()
+                                listViewModel.removeDuplicateCategoryEntities()
+                                
+                                filterToDoItems()
                             }
                             .frame(maxWidth: 800)
                             .listStyle(.sidebar)
@@ -225,7 +226,9 @@ struct ListView: View
                         }
                         .padding(.bottom)
                     }
-                }.navigationTitle("To Do Items")
+                }
+                .navigationTitle("To Do Items")
+                .navigationBarTitleDisplayMode(.inline)
                 .fullScreenCover(item: $selectedToDoItem)
                 {
                     item in

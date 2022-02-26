@@ -27,7 +27,6 @@ class ListViewModel: ObservableObject
      7. Add the newly sorted items to the new category object and add it to a new category list
      8. Replace the original populatedCategoryList with the new category list which will trigger the view to reload with the new data
      
-     
      */
     
     @Published var userName: String = "Anonymous"
@@ -42,7 +41,11 @@ class ListViewModel: ObservableObject
 
     init()
     {
+        //  Remove any duplicate category entities
+        removeDuplicateCategoryEntities()
+        
         initializeCategoryList()
+        
         retrieveToDoItems()
         retrievePopulatedCategories()
         retrieveUserNameFromUserDefaults()
@@ -53,10 +56,30 @@ class ListViewModel: ObservableObject
         getFilterAndSortValuesFromUserDefaults()
         
         filterPopulatedCategoryToDoItems()
+    }
+    
+    func removeDuplicateCategoryEntities()
+    {
+        var categoryEntities = CategoryEntity.all() as [CategoryEntity]
         
-        Log.info("Filter type in UserDefaults is: \(filterType)")
-        Log.info("Sort order in UserDefaults is: \(sortOrder)")
-        Log.info("")
+        var categoryNames: [String] = []
+        
+        for categoryEntity in categoryEntities
+        {
+            let categoryName = categoryEntity.categoryName!
+            
+            if categoryEntity.toDoItems?.count == 0
+            {
+                if !categoryNames.contains(categoryName) && categoryName != "Home" && categoryName != "Programming"
+                {
+                    categoryNames.append(categoryName)
+                }
+                else
+                {
+                    categoryEntity.delete()
+                }
+            }
+        }
     }
     
     // MARK: -
@@ -150,11 +173,6 @@ class ListViewModel: ObservableObject
     
     func filterToDoItems(searchType: String, sortOrder: String)
     {
-        Log.info("SearchType is '\(searchType)' and sortOrder is '\(sortOrder)'")
-
-        retrieveToDoItems()
-        retrievePopulatedCategories()
-
         if searchType == "Completed"
         {
             isFiltered = true
@@ -269,6 +287,7 @@ class ListViewModel: ObservableObject
             retrievedToDoItem.delete()
         
             retrieveToDoItems()
+            filterPopulatedCategoryToDoItems()
         }
     }
     
@@ -280,6 +299,7 @@ class ListViewModel: ObservableObject
             retrievedToDoItem.delete()
         
             retrieveToDoItems()
+            filterPopulatedCategoryToDoItems()
         }
     }
     
@@ -287,7 +307,7 @@ class ListViewModel: ObservableObject
     // MARK: Add Functions
     func initializeCategoryList()
     {
-        let defaultCategories = ["General", "Shopping List", "Home", "Errands", "Appointments", "Reminders"]
+        let defaultCategories = ["General", "Shopping List", "Home", "Errands", "Appointments", "Reminders", "Programming"]
         
         retrieveCategories()
         
@@ -357,9 +377,17 @@ class ListViewModel: ObservableObject
         
         toDoItemEntity.save()
         
+        //  Add the toDoItem to the categoryEntity and save it
+        if let categoryEntity = retrieveCategoryEntityByCategoryName(categoryName: categoryName)
+        {
+            categoryEntity.toDoItems?.adding(toDoItemEntity)
+
+            categoryEntity.save()
+        }
+        
         retrieveToDoItems()
         
-        filterToDoItems(searchType: "No Filter", sortOrder: "Ascending")
+        filterPopulatedCategoryToDoItems()
     }
 
     // MARK: -
@@ -389,11 +417,19 @@ class ListViewModel: ObservableObject
             toDoItemEntity.category = categoryEntity
             
             toDoItemEntity.save()
+            
+            //  Add the toDoItem to the categoryEntity and save it
+            if let categoryEntity = retrieveCategoryEntityByCategoryName(categoryName: categoryName)
+            {
+                categoryEntity.toDoItems?.adding(toDoItemEntity)
+
+                categoryEntity.save()
+            }
         }
         
         retrieveToDoItems()
         
-        filterToDoItems(searchType: "No Filter", sortOrder: "Ascending")
+        filterPopulatedCategoryToDoItems()
     }
     
     // MARK: -

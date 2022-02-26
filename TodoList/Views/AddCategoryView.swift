@@ -50,7 +50,9 @@ struct AddCategoryView: View
                     
             }).disabled(!validateFields())
                 
-        }.navigationTitle("Add Category")
+        }
+        .navigationTitle("Add Category")
+        .navigationBarTitleDisplayMode(.inline)
         .padding(20)
         
         Spacer()
@@ -61,6 +63,7 @@ struct AddCategoryView: View
     func saveButtonPressed()
     {
         listViewModel.addCategory(categoryName: categoryName)
+        
         listViewModel.retrieveCategories()
         
         presentationMode.wrappedValue.dismiss()

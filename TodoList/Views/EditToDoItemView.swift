@@ -17,9 +17,14 @@ struct EditToDoItemView: View
     @State var title: String = Constants.EMPTY_STRING
     @State var category: String = Constants.EMPTY_STRING
     @State var description: String = Constants.EMPTY_STRING
-    @State var selectedCategory:  String = Constants.EMPTY_STRING
+    @State var selectedCategory:  String = "General"
     
     let toDoItem: ToDoItem
+    
+    func setSelectedCategory()
+    {
+        selectedCategory = toDoItem.category
+    }
     
     // MARK: -
     // MARK: BODY
@@ -95,6 +100,7 @@ struct EditToDoItemView: View
                 .padding(14)
             }
             .navigationTitle("Edit Item")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar
             {
                 ToolbarItem(placement: .navigationBarTrailing)
@@ -117,6 +123,7 @@ struct EditToDoItemView: View
                     }
                 }
             }
+            .onAppear(perform: setSelectedCategory)
             
             Spacer()
         }

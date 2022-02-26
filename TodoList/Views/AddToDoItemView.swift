@@ -21,7 +21,7 @@ struct AddToDoItemView: View
     @State var alertTitle: String = Constants.EMPTY_STRING
     @State var showAlert: Bool = false
     @State var showCategoryTextField: Bool = false
-    @State var selectedCategory: String = Constants.EMPTY_STRING
+    @State var selectedCategory: String = "General"
     
     // MARK: -
     // MARK: BODY
@@ -112,6 +112,7 @@ struct AddToDoItemView: View
             .padding(14)
         }
         .navigationTitle("Add Item")
+        .navigationBarTitleDisplayMode(.inline)
         .alert(isPresented: $showAlert, content: getAlert)
         .toolbar
         {
@@ -134,6 +135,7 @@ struct AddToDoItemView: View
     func saveButtonPressed()
     {
         listViewModel.addToDoItem(categoryName: selectedCategory, title: title, description: description)
+        
         presentationMode.wrappedValue.dismiss()
     }
 
